@@ -1,42 +1,51 @@
-const prevButton = document.getElementById('prev')
-const nextButton = document.getElementById('next')
-const items = document.querySelectorAll('.item')
-const dots = document.querySelectorAll('.dot')
-const numberIndicator = document.querySelector('.numbers')
-const list = document.querySelector('.list')
+const form = document.getElementById("converterForm")
+const amount = document.getElementById("amount")
+const fromCurrency = document.getElementById("fromCurrency")
+const convertedAmount = document.getElementById("convertedAmount")
+const toCurrency = document.getElementById("toCurrency")
+const loading = document.querySelector(".loading")
+const result = document.querySelector(".result")
+const error = document.querySelector(".error")
 
-let active = 0;
-const total = items.length;
-let timer;
+const API_URL = "https://api.exchangerate-api.com/v4/latest/"
 
-function update(direction) {
+async function convertMoney() {
+    loading.style.display = "block"
+    error.style.display = "none"
+    result.style.display = "none"
 
-document.querySelector('.item.active').classList.remove('active')
-document.querySelector('.dot.active').classList.remove('active')
+    try {
+        const response = await fetch(API_URL + fromCurrency.value)
+        const data = await response.json()
 
-if(direction > 0){
- active = active + 1
+        const rate = data.rates[toCurrency.value]
+        const convertedvalue = (amount.value * rate).toFixed(2)
 
- if(active === total){
-    active = 0
- }
-} 
+        convertedAmount.value = convertedvalue
+    result.style.display = "block"
 
-else if(direction < 0 ) {
+        result.innerHTML = `
 
+<div style="font-size: 1.4rem">
+    ${amount.value} ${fromCurrency.value} = ${convertedAmount.value} ${toCurrency.value}
+    </div>
+    <div style="font-size: 0.8rem; opacity: 0.8 margin top 10px">
+    Taxa: 1 ${fromCurrency.value} = ${rate} ${toCurrency.value}
+    </div>
+`
 
+    }
+    catch (err) {
+        error.style.display = "block"
+        error.innerHTML = "Ops! Erro ao buscar cotação. Tente mais tarde.";
+    }
+
+    loading.style.display = "none"
 }
 
-items[active].classList.add('active')
-dots[active].classList.add('active')
 
-}
+form.addEventListener("submit", function (event) {
+    event.preventDefault()
+    convertMoney()
 
-
-prevButton.addEventListener('click',() => {
-   update(-1)
-})
-
-nextButton.addEventListener('click',() => {
-    update(+1)
 })
